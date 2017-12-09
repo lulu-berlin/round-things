@@ -61,3 +61,8 @@ typings/
 *.DS_Store
 */.DS_Store
 
+# build output folder
+dist
+
+# created by awesome-typescript-loader
+.awcache
