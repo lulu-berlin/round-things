@@ -11,68 +11,11 @@ const {CheckerPlugin} = require('awesome-typescript-loader');
 
 const tsconfig = 'tsconfig.json';
 
-const plugins = [];
-
-// common
-plugins.push(
-  new CheckerPlugin(),
-  new HtmlWebpackPlugin({
-    title: pkg.name,
-    template: 'testplayer/index.html',
-    filename: './index.html'
-  }),
-  new webpack.optimize.CommonsChunkPlugin({
-    name: 'vendor', // Specify the common bundle's name.
-    minChunks: Infinity
-  }),
-  new ExtractTextPlugin({
-    filename: 'static/css/bundle.css',
-    disable: false,
-    allChunks: true
-  }),
-  new SpriteLoaderPlugin()
-);
-
-// production
-if (mode === 'production') {
-  //sets the value for production for other modules to use.
-  plugins.push(
-    new webpack.DefinePlugin({
-      'process.env': {
-        'NODE_ENV': JSON.stringify('production')
-      }
-    }),
-    // Cleans up the dist folder before building new build
-    new CleanWebpackPlugin(['tmp'], {
-      root: __dirname,
-      verbose: true,
-      dry: false,
-      exclude: ['node_modules/*']
-    }),
-    // minify js
-    new BabiliPlugin(),
-    new webpack.optimize.UglifyJsPlugin(),
-    // minifies css
-    new OptimizeCSSAssetsPlugin({
-      cssProcessor: cssnano,
-      cssProcessorOptions: {
-        discardComments: {
-          removeAll: true,
-        },
-        // Run cssnano in safe mode to avoid
-        // potentially unsafe transformations.
-        safe: true,
-      },
-      canPrint: false,
-    })
-  );
-}
-
 module.exports = {
   context: path.resolve(__dirname, 'src'),
   entry: {
     vendor: ['react', 'react-dom'],
-    testplayer: ['./testplayer/app.tsx']
+    app: ['./app.tsx']
   },
   output: {
     path: path.join(__dirname, './dist'),
@@ -94,7 +37,23 @@ module.exports = {
   node: {
     fs: 'empty'
   },
-  plugins: plugins,
+  plugins: [
+    new CleanWebpackPlugin(['dist']),
+    new CheckerPlugin(),
+    new HtmlWebpackPlugin({
+      template: 'index.html',
+      filename: './index.html'
+    }),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor', // Specify the common bundle's name.
+      minChunks: Infinity
+    }),
+    new ExtractTextPlugin({
+      filename: 'static/css/bundle.css',
+      disable: false,
+      allChunks: true
+    })
+  ],
   module: {
     rules: [{
         test: /\.ts(x?)$/,
@@ -127,8 +86,7 @@ module.exports = {
             sourceMap: true,
             modules: true,
             importLoaders: 1,
-            localIdentName: '[path]___[local]___[hash:base64:5]',
-            getLocalIdent: getlocalIdent
+            localIdentName: '[path]___[local]___[hash:base64:5]'
           }
         }, {
           loader: 'resolve-url-loader',
@@ -157,9 +115,7 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.svg'],
-    plugins: [
-      new TsConfigPathsPlugin(tsconfig)
-    ],
+    plugins: [],
     modules: [
       path.resolve('./node_modules')
     ]
